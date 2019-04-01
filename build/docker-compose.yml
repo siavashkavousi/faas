@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+
+  gateway:
+    image: gateway:0.0.1-SNAPSHOT
+    ports:
+      - 8080:8080
+    networks:
+      faas:
+        aliases:
+          - gateway
+
+  grafana:
+    image: grafana/grafana:6.0.2
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    networks:
+      faas:
+        aliases:
+          - grafana
+
+  prometheus:
+    image: prom/prometheus:v2.8.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      faas:
+        aliases:
+          - prometheus
+
+networks:
+  faas:
+
+volumes:
+  prometheus_data:
+  grafana_data:
