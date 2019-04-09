@@ -23,6 +23,8 @@ public class ProxyResource {
 
 		String response = proxy.exec(request);
 
+		logger.debug("returning response: {}", response);
+
 		return ResponseEntity.ok(response);
 	}
 

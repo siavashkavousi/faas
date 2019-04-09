@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+
+      routes:
+        - id: provider_deployment_routes
+          uri: ${faas.provider.base.url}
+          predicates:
+            - Path=/deployments/**

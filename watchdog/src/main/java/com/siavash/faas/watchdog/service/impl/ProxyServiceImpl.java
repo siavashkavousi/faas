@@ -4,6 +4,7 @@ import com.siavash.faas.watchdog.config.Configs;
 import com.siavash.faas.watchdog.service.ProxyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -46,7 +47,9 @@ public class ProxyServiceImpl implements ProxyService {
 	private List<String> getCommands(String request) {
 		ArrayList<String> commands = new ArrayList<>(Arrays.asList(configs.getFunctionCommand().split(" ")));
 		commands.add("-");
-		commands.add(request);
+		if (!StringUtils.isEmpty(request)) {
+			commands.add(request);
+		}
 		return commands;
 	}
 

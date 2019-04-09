@@ -3,6 +3,7 @@ package com.siavash.faas.gateway.service.impl;
 import com.siavash.faas.gateway.service.FunctionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -18,12 +19,16 @@ public class FunctionServiceImpl implements FunctionService {
 
 	@Override
 	public Mono<ResponseEntity<String>> invoke(String funcName, String request) {
-		return webClientBuilder
+		WebClient.RequestBodyUriSpec requestSpec = webClientBuilder
 				.baseUrl(constructUrl(funcName))
 				.build()
-				.post()
-				.body(BodyInserters.fromObject(request))
-				.exchange().flatMap(response -> response.toEntity(String.class));
+				.post();
+
+		if (!StringUtils.isEmpty(request)) {
+			requestSpec.syncBody(request);
+		}
+
+		return requestSpec.exchange().flatMap(response -> response.toEntity(String.class));
 	}
 
 	private String constructUrl(String funcName) {

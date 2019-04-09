@@ -7,9 +7,45 @@ services:
     ports:
       - 8080:8080
     networks:
-      faas:
-        aliases:
-          - gateway
+      functions:
+          aliases:
+            - gateway
+    deploy:
+      resources:
+        # limits:   # Enable if you want to limit memory usage
+        #     memory: 200M
+        reservations:
+          memory: 100M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 20
+        window: 380s
+      placement:
+        constraints:
+          - "node.platform.os == linux"
+
+  #  swarm-provider:
+  #    volumes:
+  #      - "/var/run/docker.sock:/var/run/docker.sock"
+  #    image: provider/swarm:0.0.1-SNAPSHOT
+  #    networks:
+  #      - functions
+  #    deploy:
+  #      placement:
+  #        constraints:
+  #          - "node.role == manager"
+  #          - "node.platform.os == linux"
+  #      resources:
+  #        # limits:   # Enable if you want to limit memory usage
+  #        #     memory: 100M
+  #        reservations:
+  #          memory: 100M
+  #      restart_policy:
+  #        condition: on-failure
+  #        delay: 5s
+  #        max_attempts: 20
+  #        window: 380s
 
   grafana:
     image: grafana/grafana:6.0.2
@@ -21,7 +57,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=password
     networks:
-      faas:
+      functions:
         aliases:
           - grafana
 
@@ -31,14 +67,51 @@ services:
       - 9090:9090
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/alert.rules.yml:/etc/prometheus/alert.rules.yml
       - prometheus_data:/prometheus
     networks:
-      faas:
+      functions:
         aliases:
           - prometheus
+    deploy:
+      placement:
+        constraints:
+          - "node.role == manager"
+          - "node.platform.os == linux"
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  alertmanager:
+    image: prom/alertmanager:v0.16.2
+    command:
+      - "--config.file=/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    networks:
+      functions:
+        aliases:
+          - alertmanager
+    ports:
+      - 9093:9093
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+        reservations:
+          memory: 20M
+      placement:
+        constraints:
+          - "node.role == manager"
+          - "node.platform.os == linux"
+    volumes:
+      - ./config/alertmanager.yml:/alertmanager.yml
 
 networks:
-  faas:
+  functions:
+    driver: overlay
+    attachable: true
 
 volumes:
   prometheus_data:
