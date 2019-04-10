@@ -14,8 +14,6 @@ services:
             - gateway
     deploy:
       resources:
-        # limits:   # Enable if you want to limit memory usage
-        #     memory: 200M
         reservations:
           memory: 100M
       restart_policy:
@@ -27,27 +25,30 @@ services:
         constraints:
           - "node.platform.os == linux"
 
-  #  swarm-provider:
-  #    volumes:
-  #      - "/var/run/docker.sock:/var/run/docker.sock"
-  #    image: provider/swarm:0.0.1-SNAPSHOT
-  #    networks:
-  #      - functions
-  #    deploy:
-  #      placement:
-  #        constraints:
-  #          - "node.role == manager"
-  #          - "node.platform.os == linux"
-  #      resources:
-  #        # limits:   # Enable if you want to limit memory usage
-  #        #     memory: 100M
-  #        reservations:
-  #          memory: 100M
-  #      restart_policy:
-  #        condition: on-failure
-  #        delay: 5s
-  #        max_attempts: 20
-  #        window: 380s
+  provider:
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    image: provider:0.0.1-SNAPSHOT
+    networks:
+      functions:
+        aliases:
+          - provider
+    ports:
+      - target: 8070
+        published: 8070
+    deploy:
+      placement:
+        constraints:
+          - "node.role == manager"
+          - "node.platform.os == linux"
+      resources:
+        reservations:
+          memory: 100M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 20
+        window: 380s
 
   grafana:
     image: grafana/grafana:6.0.2
