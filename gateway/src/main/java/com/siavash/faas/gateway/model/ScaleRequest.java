@@ -23,4 +23,9 @@ public class ScaleRequest implements Serializable {
 
 	private long replicas;
 
+	public ScaleRequest(String name, ScaleMode mode) {
+		this.name = name;
+		this.mode = mode;
+	}
+
 }

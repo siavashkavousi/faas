@@ -1,6 +1,7 @@
 package com.siavash.faas.gateway.service.impl;
 
 import com.siavash.faas.gateway.service.MetricService;
+import com.siavash.faas.gateway.util.Constants;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class MetricServiceImpl implements MetricService {
 	@Override
 	public void incrementFunctionInvocationTotal(String name) {
 		Counter counter = Counter.builder("function.invocation")
-				.tag("function_name", name)
+				.tag(Constants.FUNCTION_NAME, name)
 				.register(registry);
 		counter.increment();
 	}
