@@ -3,7 +3,8 @@ groups:
     rules:
       - alert: service_down
         expr: up == 0
-      - alert: APIHighInvocationRate
+
+      - alert: api-high-invocation-rate
         expr: sum(rate(function_invocation_total[10s])) BY (function_name) > 5
         for: 5s
         labels:
@@ -12,3 +13,13 @@ groups:
         annotations:
           description: High invocation total on {{ $labels.function_name }}
           summary: High invocation total on {{ $labels.function_name }}
+
+      - alert: api-low-invocation-rate
+        expr: sum(rate(function_invocation_total[1m])) BY (function_name) < 5
+        for: 5s
+        labels:
+          service: gateway
+          severity: minor
+        annotations:
+          description: Low invocation total on {{ $labels.function_name }}
+          summary: Low invocation total on {{ $labels.function_name }}

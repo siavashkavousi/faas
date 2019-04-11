@@ -5,6 +5,8 @@ import reactor.core.publisher.Mono;
 
 public interface DeploymentService {
 
-	Mono<ResponseEntity> scale(String funcName);
+	Mono<ResponseEntity> scaleUp(String funcName);
+
+	Mono<ResponseEntity> scaleSpecific(String funcName, long specific);
 
 }
