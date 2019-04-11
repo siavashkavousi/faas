@@ -31,16 +31,20 @@ public class ProxyServiceImpl implements ProxyService {
 		builder.command(getCommands(request));
 		Process process = builder.start();
 
-		StringBuilder result = new StringBuilder();
-		StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), content -> result.append(content).append("\n"));
+		StringBuilder output = new StringBuilder();
+		StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), content -> output.append(content).append("\n"));
 		Executors.newSingleThreadExecutor().submit(streamGobbler);
+
+		StringBuilder error = new StringBuilder();
+		StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), content -> error.append(content).append("\n"));
+		Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
 		int exitCode = process.waitFor();
 		if (exitCode == 0) {
-			return result.toString();
+			return output.toString();
 		} else {
 			logger.error("process finished with status code: {}", exitCode);
-			return null;
+			return error.toString();
 		}
 	}
 
