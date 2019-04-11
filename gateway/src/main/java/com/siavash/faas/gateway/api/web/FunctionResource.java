@@ -23,8 +23,10 @@ public class FunctionResource {
 	@PostMapping(path = "/{name}")
 	public Mono<ResponseEntity<String>> invoke(@PathVariable String name, @RequestBody(required = false) String request) {
 		logger.info("invoked function: {}", name);
-		metricService.incrementFunctionInvocationTotal(name);
-		return functionService.invoke(name, request);
+		return metricService.trackFunctionExecutionDuration(name, () -> {
+			Mono<ResponseEntity<String>> responseMono = functionService.invoke(name, request);
+			return responseMono.doOnSuccess(response -> metricService.incrementFunctionInvocation(name, response.getStatusCodeValue()));
+		});
 	}
 
 }
