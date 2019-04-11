@@ -26,14 +26,14 @@ public class SystemResource {
 
 	@PostMapping(path = "/alert", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public Mono<ResponseEntity> alert(@RequestBody AlertRequest request) {
-		logger.info("alert received with body: {}", request);
+		logger.debug("alert received with body: {}", request);
 
 		if (isApiHighInvocationRateAlert(request)) {
 			return deploymentService.scaleUp(getFunctionName(request));
 		} else if (isApiLowInvocationRateAlert(request)) {
 			return deploymentService.scaleSpecific(getFunctionName(request), 1L);
 		} else {
-			logger.error("unhandled alert occurred");
+			logger.error("unhandled alert occurred: {}", request);
 			return Mono.just(new ResponseEntity(HttpStatus.NO_CONTENT));
 		}
 	}

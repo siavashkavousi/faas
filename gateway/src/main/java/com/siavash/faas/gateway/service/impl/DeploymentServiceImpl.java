@@ -27,13 +27,14 @@ public class DeploymentServiceImpl implements DeploymentService {
 
 	@Override
 	public Mono<ResponseEntity> scaleSpecific(String funcName, long specific) {
-		return client.inspect(funcName).doOnSuccess(inspect -> {
+		return client.inspect(funcName).flatMap(inspect -> {
 			if (inspect.getReplicas() > 1) {
-				client.scale(new ScaleRequest(funcName, ScaleMode.SPECIFIC, specific));
+				return client.scale(new ScaleRequest(funcName, ScaleMode.SPECIFIC, specific));
 			} else {
 				logger.debug("function: {} is scaled down already", funcName);
+				return Mono.just(new ResponseEntity(HttpStatus.NO_CONTENT));
 			}
-		}).flatMap(t -> Mono.just(new ResponseEntity(HttpStatus.NO_CONTENT)));
+		});
 	}
 
 }
