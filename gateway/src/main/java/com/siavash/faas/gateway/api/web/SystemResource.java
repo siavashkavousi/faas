@@ -1,5 +1,6 @@
 package com.siavash.faas.gateway.api.web;
 
+import com.siavash.faas.gateway.config.Configs;
 import com.siavash.faas.gateway.model.AlertRequest;
 import com.siavash.faas.gateway.service.DeploymentService;
 import com.siavash.faas.gateway.util.Constants;
@@ -19,9 +20,11 @@ import reactor.core.publisher.Mono;
 public class SystemResource {
 
 	private final DeploymentService deploymentService;
+	private final Configs configs;
 
-	public SystemResource(final DeploymentService deploymentService) {
+	public SystemResource(final DeploymentService deploymentService, final Configs configs) {
 		this.deploymentService = deploymentService;
+		this.configs = configs;
 	}
 
 	@PostMapping(path = "/alert", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -31,7 +34,7 @@ public class SystemResource {
 		if (isApiHighInvocationRateAlert(request)) {
 			return deploymentService.scaleUp(getFunctionName(request));
 		} else if (isApiLowInvocationRateAlert(request)) {
-			return deploymentService.scaleSpecific(getFunctionName(request), 1L);
+			return deploymentService.scaleSpecific(getFunctionName(request), configs.getProviderScaleMin());
 		} else {
 			logger.error("unhandled alert occurred: {}", request);
 			return Mono.just(new ResponseEntity(HttpStatus.NO_CONTENT));

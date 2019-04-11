@@ -16,4 +16,8 @@ public class Configs {
 		return env.getRequiredProperty("faas.provider.base.url");
 	}
 
+	public Integer getProviderScaleMin() {
+		return env.getRequiredProperty("faas.provider.scale.min", Integer.class);
+	}
+
 }
