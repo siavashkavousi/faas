@@ -2,11 +2,12 @@ package com.siavash.faas.provider.service.impl;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.*;
-import com.siavash.faas.provider.config.ProviderConfigs;
+import com.siavash.faas.provider.config.Configs;
 import com.siavash.faas.provider.mapper.ProviderMapper;
 import com.siavash.faas.provider.model.*;
 import com.siavash.faas.provider.service.ProviderService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,10 +16,10 @@ import java.util.List;
 public class SwarmProvider implements ProviderService {
 
 	private final DockerClient dockerClient;
-	private final ProviderConfigs configs;
+	private final Configs configs;
 	private final ProviderMapper mapper;
 
-	public SwarmProvider(final DockerClient dockerClient, final ProviderConfigs configs, final ProviderMapper mapper) {
+	public SwarmProvider(final DockerClient dockerClient, final Configs configs, final ProviderMapper mapper) {
 		this.dockerClient = dockerClient;
 		this.configs = configs;
 		this.mapper = mapper;
@@ -67,7 +68,13 @@ public class SwarmProvider implements ProviderService {
 
 	private ServiceSpec deployServiceSpec(DeployRequest deploy) {
 		ServiceSpec serviceSpec = new ServiceSpec();
-		serviceSpec.withName(deploy.getName())
+
+		String name = deploy.getName();
+		if (!StringUtils.isEmpty(configs.getServiceNamePrefix())) {
+			name = configs.getServiceNamePrefix() + deploy.getName();
+		}
+
+		serviceSpec.withName(name)
 				.withNetworks(networkAttachmentConfigs())
 				.withTaskTemplate(taskSpec(deploy));
 		return serviceSpec;

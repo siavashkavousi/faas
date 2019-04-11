@@ -1,15 +1,21 @@
 package com.siavash.faas.provider.config;
 
 import org.springframework.core.env.Environment;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProviderConfigs {
+public class Configs {
 
 	private final Environment env;
 
-	public ProviderConfigs(final Environment env) {
+	public Configs(final Environment env) {
 		this.env = env;
+	}
+
+	@Nullable
+	public String getServiceNamePrefix() {
+		return env.getProperty("provider.service.name.prefix");
 	}
 
 	public String getNetworkName() {
