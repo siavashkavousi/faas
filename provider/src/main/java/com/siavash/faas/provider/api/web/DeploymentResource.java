@@ -52,6 +52,8 @@ public class DeploymentResource {
 
 		InspectResponse response = providerLookup.providerService(Provider.SWARM).inspect(name);
 
+		logger.info("inspect response: {}", response);
+
 		return ResponseEntity.ok(response);
 	}
 

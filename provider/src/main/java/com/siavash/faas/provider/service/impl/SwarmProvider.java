@@ -41,13 +41,13 @@ public class SwarmProvider implements ProviderService {
 		long replicas = getServiceReplicas(serviceSpec);
 		long version = getServiceVersion(serviceId);
 
-		if (ScaleMode.UP.equals(scale.getMode())) {
+		if (ScaleMode.UP.equals(scale.getMode()) && replicas < configs.getScaleMax()) {
 			serviceSpec = scaleServiceSpec(serviceSpec, replicas + 1);
-		} else if (ScaleMode.DOWN.equals(scale.getMode())) {
+		} else if (ScaleMode.DOWN.equals(scale.getMode()) && replicas > configs.getScaleMin()) {
 			serviceSpec = scaleServiceSpec(serviceSpec, replicas - 1);
-		} else if (ScaleMode.SPECIFIC.equals(scale.getMode())) {
+		} else if (ScaleMode.SPECIFIC.equals(scale.getMode()) && scale.getReplicas() >= configs.getScaleMin() && scale.getReplicas() <= configs.getScaleMax()) {
 			serviceSpec = scaleServiceSpec(serviceSpec, scale.getReplicas());
-		} else if (ScaleMode.ZERO.equals(scale.getMode())) {
+		} else if (ScaleMode.ZERO.equals(scale.getMode()) && configs.getScaleMin() == 0) {
 			serviceSpec = scaleServiceSpec(serviceSpec, 0);
 		}
 

@@ -16,4 +16,12 @@ public class ProviderConfigs {
 		return env.getRequiredProperty("provider.network.name");
 	}
 
+	public Integer getScaleMin() {
+		return env.getRequiredProperty("provider.scale.min", Integer.class);
+	}
+
+	public Integer getScaleMax() {
+		return env.getRequiredProperty("provider.scale.max", Integer.class);
+	}
+
 }
