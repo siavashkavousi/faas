@@ -4,14 +4,9 @@ import com.siavash.faas.watchdog.config.Configs;
 import com.siavash.faas.watchdog.service.ProxyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.*;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
@@ -28,33 +23,27 @@ public class ProxyServiceImpl implements ProxyService {
 	@Override
 	public String exec(String request) throws Exception {
 		ProcessBuilder builder = new ProcessBuilder();
-		builder.command(getCommands(request));
+		builder.command(Arrays.asList(configs.getFunctionCommand().split(" ")));
+		builder.redirectErrorStream(true);
 		Process process = builder.start();
+
+		OutputStream stdin = process.getOutputStream();
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+		writer.write(request);
+		writer.flush();
+		writer.close();
 
 		StringBuilder output = new StringBuilder();
 		StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), content -> output.append(content).append("\n"));
 		Executors.newSingleThreadExecutor().submit(streamGobbler);
-
-		StringBuilder error = new StringBuilder();
-		StreamGobbler errorStreamGobbler = new StreamGobbler(process.getErrorStream(), content -> error.append(content).append("\n"));
-		Executors.newSingleThreadExecutor().submit(errorStreamGobbler);
 
 		int exitCode = process.waitFor();
 		if (exitCode == 0) {
 			return output.toString();
 		} else {
 			logger.error("process finished with status code: {}", exitCode);
-			return error.toString();
+			return output.toString();
 		}
-	}
-
-	private List<String> getCommands(String request) {
-		ArrayList<String> commands = new ArrayList<>(Arrays.asList(configs.getFunctionCommand().split(" ")));
-		commands.add("-");
-		if (!StringUtils.isEmpty(request)) {
-			commands.add(request);
-		}
-		return commands;
 	}
 
 	private static class StreamGobbler implements Runnable {
