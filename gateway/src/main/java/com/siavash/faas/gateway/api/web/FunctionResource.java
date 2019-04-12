@@ -21,7 +21,7 @@ public class FunctionResource {
 	}
 
 	@PostMapping(path = "/{name}")
-	public Mono<ResponseEntity<String>> invoke(@PathVariable String name, @RequestBody(required = false) String request) {
+	public Mono<ResponseEntity<String>> invoke(@PathVariable String name, @RequestBody(required = false) String request) throws Exception {
 		logger.info("invoked function: {}", name);
 		return metricService.trackFunctionExecutionDuration(name, () -> {
 			Mono<ResponseEntity<String>> responseMono = functionService.invoke(name, request);

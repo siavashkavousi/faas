@@ -3,11 +3,11 @@ package com.siavash.faas.gateway.service.impl;
 import com.siavash.faas.gateway.service.MetricService;
 import com.siavash.faas.gateway.util.Constants;
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Service;
 
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 @Service
 public class MetricServiceImpl implements MetricService {
@@ -28,11 +28,11 @@ public class MetricServiceImpl implements MetricService {
 	}
 
 	@Override
-	public <T> T trackFunctionExecutionDuration(String name, Supplier<T> f) {
-		LongTaskTimer timer = LongTaskTimer.builder("function.execution.duration")
+	public <T> T trackFunctionExecutionDuration(String name, Callable<T> f) throws Exception {
+		Timer timer = Timer.builder("function.execution.duration")
 				.tag(Constants.FUNCTION_NAME, name)
 				.register(registry);
-		return timer.record(f);
+		return timer.recordCallable(f);
 	}
 
 }
